@@ -1,0 +1,97 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-01-19T20:30:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_shortify",
+      "_type": "workspace",
+      "name": "Shortify API",
+      "description": "API para encurtar URLs",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080/api"
+      },
+      "parentId": "wrk_shortify"
+    },
+    {
+      "_id": "req_list_links",
+      "_type": "request",
+      "parentId": "wrk_shortify",
+      "name": "Listar todos os links",
+      "method": "GET",
+      "url": "{{ _.base_url }}/links",
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "description": "Retorna todos os links encurtados do banco de dados"
+    },
+    {
+      "_id": "req_shorten_url",
+      "_type": "request",
+      "parentId": "wrk_shortify",
+      "name": "Encurtar URL",
+      "method": "POST",
+      "url": "{{ _.base_url }}/shorten",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"url\": \"https://www.google.com\"\n}"
+      },
+      "description": "Cria uma URL encurtada a partir de uma URL completa"
+    },
+    {
+      "_id": "req_redirect",
+      "_type": "request",
+      "parentId": "wrk_shortify",
+      "name": "Redirecionar para URL original",
+      "method": "GET",
+      "url": "{{ _.base_url }}/3d7",
+      "headers": [],
+      "body": {},
+      "description": "Redireciona para a URL original usando o código encurtado (substitua '3d7' pelo código real)"
+    },
+    {
+      "_id": "req_delete_link",
+      "_type": "request",
+      "parentId": "wrk_shortify",
+      "name": "Deletar link",
+      "method": "POST",
+      "url": "{{ _.base_url }}/delete",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"url\": \"3d7\"\n}"
+      },
+      "description": "Marca um link como deletado (soft delete). Use o código encurtado no campo 'url'"
+    }
+  ]
+}
