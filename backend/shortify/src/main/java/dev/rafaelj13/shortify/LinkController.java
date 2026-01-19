@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import dev.rafaelj13.shortify.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,12 +21,6 @@ public class LinkController {
 
     @Autowired
     private LinkDAO linkDAO;
-    
-    @Operation(summary = "Redirecionar para documentação", description = "Redireciona para a página de documentação Swagger")
-    @GetMapping
-    public void getMethodName(@RequestParam String param) {
-        new RedirectView("/api/docs");
-    }
     
     @Operation(summary = "Listar todos os links", description = "Retorna todos os links encurtados do banco de dados")
     @ApiResponses({
@@ -82,21 +77,29 @@ public class LinkController {
         @ApiResponse(responseCode = "200", description = "URL encurtada com sucesso"),
         @ApiResponse(responseCode = "500", description = "Erro ao criar link")
     })
-    @PostMapping("/shorten")
-    public String createLink(
-            @Parameter(description = "URL completa para encurtar", example = "https://www.google.com")
-            @RequestBody String link) {
+    @PostMapping(value = "/shorten", consumes = "application/json", produces = "application/json")
+    public Object createLink(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "JSON com a URL para encurtar",
+                required = true,
+                content = @io.swagger.v3.oas.annotations.media.Content(
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        value = "{\"url\": \"https://www.google.com\"}"
+                    )
+                )
+            )
+            @RequestBody LinkRequest request) {
         try {
-            System.out.println("Received link: " + link);
-            Link newLink = new Link(link);
+            System.out.println("Received link: " + request.getUrl());
+            Link newLink = new Link(request.getUrl());
             int generatedId = linkDAO.addLinkDB(newLink);
             String shortCode = LinkService.encodeBase62(generatedId);
             System.out.println("Link inserted with ID: " + generatedId);
-            return "{\"shortUrl\": \"http://127.0.0.1:8080/api/" + shortCode + "\"}";
+            return new LinkResponse("http://127.0.0.1:8080/api/" + shortCode, generatedId);
         } catch (SQLException e) {
             System.err.println("Error inserting link: " + e.getMessage());
             e.printStackTrace();
-            return "{\"error\": \"" + e.getMessage() + "\"}";
+            return new ErrorResponse(e.getMessage());
         }
     }
     
@@ -105,27 +108,26 @@ public class LinkController {
         @ApiResponse(responseCode = "200", description = "Link deletado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Link não encontrado ou já deletado")
     })
-    @PostMapping("/delete/{id}")
-    public String deleteLink(
-            @Parameter(description = "Código encurtado do link a deletar (Base62)", example = "3d7")
-            @PathVariable String id) throws SQLException {
-        int decodedId = LinkService.decodeBase62(id);
+    @PostMapping(value = "/delete", consumes = "application/json", produces = "application/json")
+    public Object deleteLink(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "JSON com o código do link",
+                required = true,
+                content = @io.swagger.v3.oas.annotations.media.Content(
+                    examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        value = "{\"url\": \"3d7\"}"
+                    )
+                )
+            )
+            @RequestBody LinkRequest request) throws SQLException {
+        int decodedId = LinkService.decodeBase62(request.getUrl());
         Link link = linkDAO.getLinkById(decodedId);
         if (link != null && !link.isDeleted()) {
             linkDAO.deleteLink(link.getId());
-            return "{\"status\": \"Link deleted successfully\"}";
+            return new StatusResponse("success", "Link deleted successfully");
         } else {
-            return "{\"error\": \"Link not found or already deleted\"}";
+            return new ErrorResponse("Link not found or already deleted");
         }
     }
-    
-    @Operation(summary = "Página de erro", description = "Exibe mensagens de erro")
-    @ApiResponse(responseCode = "200", description = "Mensagem de erro retornada")
-    @GetMapping("/error")
-    public String error(
-            @Parameter(description = "Mensagem de erro") 
-            @RequestParam String param) {
-        return "Error: " + param;
-    }
-    
+
 }
