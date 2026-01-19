@@ -32,7 +32,7 @@ public class LinkController {
         @ApiResponse(responseCode = "200", description = "Lista de links retornada com sucesso"),
         @ApiResponse(responseCode = "500", description = "Erro ao buscar links")
     })
-    @GetMapping("/links")
+    @GetMapping(value = "/links", produces = "application/json")
     public String getLinks() {
         try {
             var rs = linkDAO.test();
@@ -40,22 +40,22 @@ public class LinkController {
             boolean first = true;
             int count = 0;
             while (rs.next()) {
-                if (!first) result.append(", ");
-                result.append("{")
-                      .append("\"id\": ").append(rs.getInt("id"))
-                      .append(", \"original_link\": \"").append(rs.getString("original_link"))
-                      .append("\", \"clicks\": ").append(rs.getInt("clicks"))
-                      .append(", \"created_at\": \"").append(rs.getTimestamp("created_at"))
-                      .append("\"}");
+                if (!first) result.append(",");
+                result.append("\n  {")
+                      .append("\n    \"id\": ").append(rs.getInt("id")).append(",")
+                      .append("\n    \"original_link\": \"").append(rs.getString("original_link")).append("\",")
+                      .append("\n    \"clicks\": ").append(rs.getInt("clicks")).append(",")
+                      .append("\n    \"created_at\": \"").append(rs.getTimestamp("created_at")).append("\"")
+                      .append("\n  }");
                 first = false;
                 count++;
             }
-            result.append("]");
+            result.append("\n]");
             System.out.println("Found " + count + " links");
             return result.toString();
         } catch (SQLException e) {
             e.printStackTrace();
-            return "Error: " + e.getMessage();
+            return "{\"error\": \"" + e.getMessage() + "\"}";
         }
     }
 
