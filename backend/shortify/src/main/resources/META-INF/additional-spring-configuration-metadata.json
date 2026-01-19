@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "spring.datasource.username",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.username'"
+  },
+  {
+    "name": "spring.datasource.password",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.password'"
+  },
+  {
+    "name": "spring.datasource.mysql_url",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.mysql_url'"
+  },
+  {
+    "name": "spring.datasource.driver-class-name",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.driver-class-name'"
+  }
+]}
